@@ -1,0 +1,130 @@
+import time
+import requests
+import importlib
+import importlib.resources
+import os
+import sys
+import torch
+import numpy as np
+
+from ase.calculators.calculator import Calculator, all_changes
+from ase import Atom, Atoms, units
+from ase.neighborlist import neighbor_list
+from torch_geometric.data import Data, Batch
+from torch_geometric.loader import DataLoader
+
+import vesin
+
+from .config import LoadConfig
+
+
+class EqnormCalculator(Calculator):
+    implemented_properties = ['energy', 'free_energy', 'forces', 'stress']
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.model_name = kwargs["model_name"]
+
+        # self.model_args = kwargs["model_args"]
+        # self.model_args = "./model_settings/eqnorm-1M.yaml"
+        self.model_args = str(importlib.resources.files("eqnorm.model_settings") / "eqnorm-1M.yaml")
+        print(f"load model args file from {self.model_args}")
+
+        self.model_args = LoadConfig(yaml_path=self.model_args).load_args()
+        self.device = torch.device(kwargs["device"])
+
+        module = importlib.import_module(f"eqnorm.{self.model_name}")
+        HDNNP = getattr(module, "HDNNP")
+
+        self.r_cutoff = self.model_args.r_cutoff
+
+        # self.ckpt_file = kwargs["ckpt_file"]
+        # self.ckpt_file = "./model_ckpt/eqnorm.pt"
+        self.ckpt_file = str(importlib.resources.files("eqnorm.model_ckpt") / "eqnorm.pt")
+
+        # url = "https://figshare.com/files/54821513"
+        # self.ckpt_file = "~/.cache/eqnorm/eqnorm.pt"
+        # if os.path.exists(self.ckpt_file):
+        #     print(f"File {self.ckpt_file} already exists, skipping download.")
+        # else:
+        #     print(f"File {self.ckpt_file} not exists, downloading...")
+        #     response = requests.get(url)
+        #     if response.status_code == 200:
+        #         with open(self.ckpt_file, "wb") as f:
+        #             f.write(response.content)
+        #         print(f"File downloaded successfully and saved as {self.ckpt_file}")
+        #     else:
+        #         print(f"Failed to download file. HTTP status code: {response.status_code}")
+
+        start_load = time.perf_counter()
+        if self.device.type == "cuda":
+            checkpoint = torch.load(self.ckpt_file)
+        else:
+            checkpoint = torch.load(self.ckpt_file, map_location=torch.device('cpu'))
+        print(f"load ckpt from {self.ckpt_file}, time: {(time.perf_counter() - start_load):.4f}")
+
+        unique_elements = checkpoint['unique_elements']
+        # print(f"loaded resume or test unique elements: {unique_elements}")
+
+        # load energy shift and scale from checkpoint
+        energy_shift, energy_scale = checkpoint['energy_shift'], checkpoint['energy_scale']
+
+        self.model = HDNNP(
+            args=self.model_args, 
+            unique_elements=unique_elements.to(self.device), 
+            shift=energy_shift.to(self.device), 
+            scale=energy_scale.to(self.device), 
+            )
+        self.model = self.model.to(self.device)
+
+        if self.model_args.use_ema:
+            self.model.load_state_dict(checkpoint['ema_model_state_dict'])
+        else:
+            self.model.load_state_dict(checkpoint['model_state_dict'])
+        print(f"total parameters: {sum(p.numel() for p in self.model.parameters() if p.requires_grad)}")
+
+        self.start_time = time.perf_counter()
+
+
+    def calculate(self, atoms: Atoms = None, properties=None, system_changes=all_changes):
+        if properties is None:
+            properties = self.implemented_properties
+
+        super().calculate(atoms, properties, system_changes)
+
+        calculator = vesin.NeighborList(cutoff=self.r_cutoff, full_list=True, sorted=False)
+        idx_i, idx_j, shifts = calculator.compute(
+            points=atoms.positions, 
+            box=atoms.cell.array, 
+            periodic=True, 
+            quantities="ijS"
+            )
+        idx_i, idx_j = idx_i.astype(np.int64), idx_j.astype(np.int64)
+        
+        idx_i, idx_j, shifts = torch.tensor(idx_i).long(), torch.tensor(idx_j).long(), torch.tensor(shifts).long()
+
+        data = Data(
+            x=None, y=None, pos=torch.tensor(self.atoms.positions).float(),  # A
+            edge_index=torch.vstack([idx_i, idx_j]).long(),
+            atomic_numbers=torch.tensor(self.atoms.get_atomic_numbers()).long(),
+            shifts=shifts,  # for pbc, D = pos_j - pos_i + shifts @ cell or D = pos_i - pos_j - shifts @ cell
+            cell=torch.tensor(self.atoms.cell.array.reshape(-1, 3, 3)).float(),  # for pbc, A
+        )
+
+        self.model.eval()
+        data = Batch.from_data_list([data]).to(self.device)
+        energy, forces, stress, _, _ = self.model(data)
+
+        # energy = energy * 0.0433641153087705  # kcal/mol to eV
+        # force = force * 0.0433641153087705  # kcal/mol/A to eV/A
+        self.results['energy'] = energy.item()
+        self.results['free_energy'] = energy.item()
+        self.results['forces'] = forces.cpu().detach().numpy()
+        if self.model_args.STRESS:
+            # self.results['stress'] = stress[0].cpu().detach().numpy().flatten()[[0, 4, 8, 5, 2, 1]]
+            self.results['stress'] = -stress[0].cpu().detach().numpy()[[0, 1, 2, 4, 5, 3]]
+        else:
+            self.results['stress'] = np.zeros(6).astype(np.float32)
+
+

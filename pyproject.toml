@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "eqnorm"
+version = "0.1.0"
+description = "A potential energy function project for eqnorm models"
+authors = [
+    {name = "Yuzhuo Chen", email = "chenyuzhuo@zhejianglab.org"}
+]
+readme = "README.md"
+license = {text = "MIT"}
+keywords = ["potential energy", "eqnorm", "models"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+dependencies = [
+    "torch>=2.0.0",
+    "numpy>=1.19.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/yzchen08/eqnorm"
+Repository = "https://github.com/yzchen08/eqnorm"
+
+[tool.setuptools.packages.find]
+include = ["eqnorm"]  # 包含 eqnorm 包
+exclude = ["config", "A100", "jit", "ckpt_bak", "log", "nohup_log", "wandb"]   # 排除测试文件夹
+
+[tool.setuptools.package-data]
+"eqnorm" = ["model_ckpt/*", "model_settings/*"]  # 包含 eqnorm/data 文件夹下的所有文件
