@@ -12,7 +12,9 @@ PyTorch >= 2.0.0
 After isntallation of PyTorch, run the following command:
 
 ```bash
-pip install git+https://github.com/yzchen08/eqnorm.git
+git clone https://github.com/yzchen08/eqnorm.git
+cd eqnorm
+pip install .
 ```
 
 ## Usage
