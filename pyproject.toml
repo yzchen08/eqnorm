@@ -31,4 +31,4 @@ include = ["eqnorm"]  # 包含 eqnorm 包
 exclude = ["config", "A100", "jit", "ckpt_bak", "log", "nohup_log", "wandb"]   # 排除测试文件夹
 
 [tool.setuptools.package-data]
-"eqnorm" = ["model_ckpt/*", "model_settings/*"]  # 包含 eqnorm/data 文件夹下的所有文件
+"eqnorm" = ["model_settings/*"]  # 包含 eqnorm/data 文件夹下的所有文件

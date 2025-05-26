@@ -41,21 +41,22 @@ class EqnormCalculator(Calculator):
 
         # self.ckpt_file = kwargs["ckpt_file"]
         # self.ckpt_file = "./model_ckpt/eqnorm.pt"
-        self.ckpt_file = str(importlib.resources.files("eqnorm.model_ckpt") / "eqnorm.pt")
+        # self.ckpt_file = str(importlib.resources.files("eqnorm.model_ckpt") / "eqnorm.pt")
 
-        # url = "https://figshare.com/files/54821513"
-        # self.ckpt_file = "~/.cache/eqnorm/eqnorm.pt"
-        # if os.path.exists(self.ckpt_file):
-        #     print(f"File {self.ckpt_file} already exists, skipping download.")
-        # else:
-        #     print(f"File {self.ckpt_file} not exists, downloading...")
-        #     response = requests.get(url)
-        #     if response.status_code == 200:
-        #         with open(self.ckpt_file, "wb") as f:
-        #             f.write(response.content)
-        #         print(f"File downloaded successfully and saved as {self.ckpt_file}")
-        #     else:
-        #         print(f"Failed to download file. HTTP status code: {response.status_code}")
+        self.ckpt_file = "~/.cache/eqnorm/eqnorm.pt"
+        if os.path.exists(self.ckpt_file):
+            print(f"File {self.ckpt_file} already exists, skipping download.")
+        else:
+            url = "https://figshare.com/files/54821513"
+            print(f"File {self.ckpt_file} not exists, downloading from {url}...")
+            response = requests.get(url)
+            if response.status_code == 200:
+                with open(self.ckpt_file, "wb") as f:
+                    f.write(response.content)
+                print(f"File downloaded successfully and saved as {self.ckpt_file}")
+            else:
+                print(f"Failed to download file. HTTP status code: {response.status_code}")
+                print(f"you can manually download the file from {url} and save it to {self.ckpt_file}")
 
         start_load = time.perf_counter()
         if self.device.type == "cuda":
