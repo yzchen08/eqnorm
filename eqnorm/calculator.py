@@ -43,7 +43,7 @@ class EqnormCalculator(Calculator):
         # self.ckpt_file = "./model_ckpt/eqnorm.pt"
         # self.ckpt_file = str(importlib.resources.files("eqnorm.model_ckpt") / "eqnorm.pt")
 
-        self.ckpt_file = "~/.cache/eqnorm/eqnorm.pt"
+        self.ckpt_file = os.path.expanduser("~/.cache/eqnorm/eqnorm.pt")
         if os.path.exists(self.ckpt_file):
             print(f"File {self.ckpt_file} already exists, skipping download.")
         else:
