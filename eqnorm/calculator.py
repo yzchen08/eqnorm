@@ -1,5 +1,5 @@
 import time
-import requests
+import wget
 import importlib
 import importlib.resources
 import os
@@ -40,19 +40,17 @@ class EqnormCalculator(Calculator):
 
         self.r_cutoff = self.model_args.r_cutoff
 
-        self.ckpt_file = os.path.expanduser("~/.cache/eqnorm/eqnorm.pt")
+        self.ckpt_file = os.path.expanduser(f"~/.cache/{self.model_name}/{self.model_variant}.pt")
         if os.path.exists(self.ckpt_file):
             print(f"File {self.ckpt_file} already exists, skipping download.")
         else:
             url = url_dict[self.model_name][self.model_variant]
             print(f"File {self.ckpt_file} not exists, downloading from {url}...")
-            response = requests.get(url)
-            if response.status_code == 200:
-                with open(self.ckpt_file, "wb") as f:
-                    f.write(response.content)
+            try:
+                wget.download(url, self.ckpt_file)
                 print(f"File downloaded successfully and saved as {self.ckpt_file}")
-            else:
-                print(f"Failed to download file. HTTP status code: {response.status_code}")
+            except Exception as e:
+                print(e)
                 print(f"you can manually download the file from {url} and save it to {self.ckpt_file}")
 
         start_load = time.perf_counter()
