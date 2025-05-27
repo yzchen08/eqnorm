@@ -1,6 +1,5 @@
 import yaml
 import argparse
-import sys
 
 
 class LoadConfig:

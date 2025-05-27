@@ -1,9 +1,7 @@
-from itertools import accumulate
 from typing import List, Optional
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from e3nn.o3 import Irreps, Norm
+from e3nn.o3 import Irreps
 from e3nn.util.jit import compile, compile_mode
 
 

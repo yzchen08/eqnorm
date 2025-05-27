@@ -3,15 +3,12 @@ import requests
 import importlib
 import importlib.resources
 import os
-import sys
 import torch
 import numpy as np
 
 from ase.calculators.calculator import Calculator, all_changes
 from ase import Atom, Atoms, units
-from ase.neighborlist import neighbor_list
 from torch_geometric.data import Data, Batch
-from torch_geometric.loader import DataLoader
 
 import vesin
 
