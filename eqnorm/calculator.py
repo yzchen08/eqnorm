@@ -40,8 +40,7 @@ class EqnormCalculator(Calculator):
 
         self.device = torch.device(kwargs["device"])
         if not torch.cuda.is_available() and self.device.type == "cuda":
-            print("CUDA is not available, switching device to cpu.")
-            exit()
+            raise ValueError("CUDA is not available, switching device to cpu.")
 
         os.makedirs(os.path.expanduser(f"~/.cache/{self.model_name}"), exist_ok=True)
         self.ckpt_file = os.path.expanduser(f"~/.cache/{self.model_name}/{self.model_variant}.pt")
@@ -54,9 +53,9 @@ class EqnormCalculator(Calculator):
                 wget.download(url, self.ckpt_file)
                 print(f"File downloaded successfully and saved as {self.ckpt_file}")
             except Exception as e:
-                print(e)
+                print(f"Error downloading file: {e}")
                 print(f"you can manually download the file from {url} and save it to {self.ckpt_file}")
-                exit()
+                raise RuntimeError(f"Failed to download file from {url}")
 
         start_load = time.perf_counter()
         if self.device.type == "cuda":
