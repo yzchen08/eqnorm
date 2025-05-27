@@ -25,7 +25,6 @@ dependencies = [
     "ase",
     "pyyaml",
     "argparse",
-    "importlib",
     "vesin",
     "torch_geometric",
     "setuptools>=61.0",
