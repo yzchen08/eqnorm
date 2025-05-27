@@ -21,30 +21,30 @@ class EqnormCalculator(Calculator):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.model_name = kwargs["model_name"]
+        url_dict = {
+            'eqnorm': {
+                'eqnorm-mptrj': "https://figshare.com/files/54821513"
+                }
+            }
 
-        # self.model_args = kwargs["model_args"]
-        # self.model_args = "./model_settings/eqnorm-1M.yaml"
-        self.model_args = str(importlib.resources.files("eqnorm.model_settings") / "eqnorm-1M.yaml")
+        self.model_name = kwargs["model_name"]
+        self.model_variant = kwargs["model_variant"]
+        module = importlib.import_module(f"{self.model_name}.{self.model_variant}")
+        HDNNP = getattr(module, "HDNNP")
+
+        self.model_args = str(importlib.resources.files(f"{self.model_name}.model_settings") / f"{self.model_variant}.yaml")
         print(f"load model args file from {self.model_args}")
 
         self.model_args = LoadConfig(yaml_path=self.model_args).load_args()
         self.device = torch.device(kwargs["device"])
 
-        module = importlib.import_module(f"eqnorm.{self.model_name}")
-        HDNNP = getattr(module, "HDNNP")
-
         self.r_cutoff = self.model_args.r_cutoff
-
-        # self.ckpt_file = kwargs["ckpt_file"]
-        # self.ckpt_file = "./model_ckpt/eqnorm.pt"
-        # self.ckpt_file = str(importlib.resources.files("eqnorm.model_ckpt") / "eqnorm.pt")
 
         self.ckpt_file = os.path.expanduser("~/.cache/eqnorm/eqnorm.pt")
         if os.path.exists(self.ckpt_file):
             print(f"File {self.ckpt_file} already exists, skipping download.")
         else:
-            url = "https://figshare.com/files/54821513"
+            url = url_dict[self.model_name][self.model_variant]
             print(f"File {self.ckpt_file} not exists, downloading from {url}...")
             response = requests.get(url)
             if response.status_code == 200:

@@ -19,7 +19,7 @@ pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https
 pip install torch_scatter -f https://data.pyg.org/whl/torch-2.6.0+cu118.html
 ```
 
-After isntallation of PyTorch, run the following command:
+After installation of PyTorch, run the following command:
 
 ```bash
 pip install git+https://github.com/yzchen08/eqnorm.git
@@ -31,5 +31,5 @@ pip install git+https://github.com/yzchen08/eqnorm.git
 
 ```python
 from eqnorm.calculator import EqnormCalculator
-calc = EqnormCalculator(model_name='eqnorm', device='cuda')
+calc = EqnormCalculator(model_name='eqnorm', model_variant='eqnorm-mptrj', device='cuda')
 ```
