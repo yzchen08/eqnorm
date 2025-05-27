@@ -23,7 +23,7 @@ classifiers = [
 ]
 dependencies = [
     "ase",
-    "yaml",
+    "pyyaml",
     "argparse",
     "importlib",
     "vesin",
