@@ -34,12 +34,15 @@ class EqnormCalculator(Calculator):
 
         self.model_args = str(importlib.resources.files(f"{self.model_name}.model_settings") / f"{self.model_variant}.yaml")
         print(f"load model args file from {self.model_args}")
-
         self.model_args = LoadConfig(yaml_path=self.model_args).load_args()
-        self.device = torch.device(kwargs["device"])
 
         self.r_cutoff = self.model_args.r_cutoff
 
+        self.device = torch.device(kwargs["device"])
+        if not torch.cuda.is_available() and self.device.type == "cuda":
+            print("CUDA is not available, switching device to cpu.")
+
+        os.makedirs(os.path.expanduser(f"~/.cache/{self.model_name}"), exist_ok=True)
         self.ckpt_file = os.path.expanduser(f"~/.cache/{self.model_name}/{self.model_variant}.pt")
         if os.path.exists(self.ckpt_file):
             print(f"File {self.ckpt_file} already exists, skipping download.")
