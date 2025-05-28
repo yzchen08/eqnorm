@@ -22,6 +22,18 @@ class EqnormCalculator(Calculator):
     """
     implemented_properties = ['energy', 'free_energy', 'forces', 'stress']
 
+    url_dict = {
+        'eqnorm': {
+            'eqnorm-mptrj': {
+                "0.9": "https://figshare.com/files/54821513", 
+                "1.0": "https://figshare.com/files/54851735",
+                },
+            'eqnorm-pro-mptrj': {
+                "0.3": "https://figshare.com/files/54876488", 
+                },
+            }
+        }
+
     def __init__(self, 
                  model_name: str,
                  model_variant: str,
@@ -31,14 +43,6 @@ class EqnormCalculator(Calculator):
                  ):
         super().__init__(**kwargs)
 
-        url_dict = {
-            'eqnorm': {
-                'eqnorm-mptrj': {
-                    "0.9": "https://figshare.com/files/54821513", 
-                    "1.0": "https://figshare.com/files/54851735",
-                    } 
-                }
-            }
         self.model_name = model_name
         self.model_variant = model_variant
         self.train_progress = str(train_progress)
@@ -47,24 +51,24 @@ class EqnormCalculator(Calculator):
             raise ValueError("CUDA is not available, switching device to cpu.")
 
         # 检查 model_name 是否在 url_dict 中
-        if self.model_name not in url_dict:
-            valid_model_names = list(url_dict.keys())
+        if self.model_name not in self.url_dict:
+            valid_model_names = list(self.url_dict.keys())
             raise KeyError(
                 f"Model name '{self.model_name}' not found in url_dict. "
                 f"Valid model names are: {valid_model_names}"
             )
 
         # 检查 model_variant 是否在 url_dict[self.model_name] 中
-        if self.model_variant not in url_dict[self.model_name]:
-            valid_model_variants = list(url_dict[self.model_name].keys())
+        if self.model_variant not in self.url_dict[self.model_name]:
+            valid_model_variants = list(self.url_dict[self.model_name].keys())
             raise KeyError(
                 f"Model variant '{self.model_variant}' not found under model name '{self.model_name}' in url_dict. "
                 f"Valid model variants are: {valid_model_variants}"
             )
 
         # 检查 train_progress 是否在 url_dict[self.model_name][self.model_variant] 中
-        if self.train_progress not in url_dict[self.model_name][self.model_variant]:
-            valid_train_progress = list(url_dict[self.model_name][self.model_variant].keys())
+        if self.train_progress not in self.url_dict[self.model_name][self.model_variant]:
+            valid_train_progress = list(self.url_dict[self.model_name][self.model_variant].keys())
             raise KeyError(
                 f"Train progress '{self.train_progress}' not found under model variant '{self.model_variant}' in url_dict. "
                 f"Valid train progress values are: {valid_train_progress}"
@@ -84,7 +88,7 @@ class EqnormCalculator(Calculator):
         if os.path.exists(self.ckpt_file):
             print(f"File {self.ckpt_file} already exists, skipping download.")
         else:
-            url = url_dict[self.model_name][self.model_variant][self.train_progress]
+            url = self.url_dict[self.model_name][self.model_variant][self.train_progress]
             print(f"File {self.ckpt_file} not exists, downloading from {url}...")
             try:
                 wget.download(url, self.ckpt_file)

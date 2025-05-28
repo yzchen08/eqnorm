@@ -1,2 +1,4 @@
 __pycache__/
 *.pyc
+log/*       # 忽略 log/ 文件夹中的所有文件和子文件夹
+!log/.gitkeep  # 保留 log/ 文件夹本身（通过一个空文件）
