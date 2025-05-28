@@ -99,10 +99,7 @@ class EqnormCalculator(Calculator):
                 raise RuntimeError(f"Failed to download file from {url}")
 
         start_load = time.perf_counter()
-        if self.device.type == "cuda":
-            checkpoint = torch.load(self.ckpt_file)
-        else:
-            checkpoint = torch.load(self.ckpt_file, map_location=torch.device('cpu'))
+        checkpoint = torch.load(self.ckpt_file, map_location=self.device, weights_only=False)
         print(f"load ckpt from {self.ckpt_file}, time: {(time.perf_counter() - start_load):.4f}")
 
         unique_elements = checkpoint['unique_elements']
