@@ -1,0 +1,24 @@
+DIPOLE: False  # calculate dipole or not
+POLAR: False  # calculate polar or not
+STRESS: True  # calculate stress or not
+energy_per_atom: True  # calculate metric per atom or not
+relative_energy: False  # calculate conformer relative energy or not
+shift: "per_species"  # per_species, per_atom
+scale: "force_rms"  # per_species, per_atom, force_rms
+shift_trainable: False  # shift_scale trainable or not
+scale_trainable: False  # shift_scale trainable or not
+
+irreps_hidden: "128x0e+64x1o+32x2e+32x3o"
+irreps_sh: "1x0e+1x1o+1x2e+1x3o"
+num_convs: 4  # number of MPNN layer, 5
+num_features: 128
+r_cutoff: 6.0  # unit A
+num_basis: 8
+invariant_layers: 2
+invariant_neurons: 64
+poly_p: 6
+use_ema: True
+
+avg_nbr: 61.84  # MPtrj_r6: 61.84 MPtrj_r5: 33.15
+avg_atoms: 31.19  # MPtrj_r6: 31.19 MPtrj_r5: 31.19
+
