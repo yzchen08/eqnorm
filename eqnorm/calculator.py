@@ -127,6 +127,9 @@ class EqnormCalculator(Calculator):
             self.model.load_state_dict(checkpoint['model_state_dict'])
         print(f"total parameters: {sum(p.numel() for p in self.model.parameters() if p.requires_grad)}")
 
+        for param in self.model.parameters():
+            param.requires_grad = False
+
         if compile:
             self.model = torch.compile(self.model, mode='default')
 
