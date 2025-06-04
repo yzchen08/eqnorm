@@ -43,7 +43,7 @@ class EqnormCalculator(Calculator):
                  model_variant: str,
                  train_progress: str="1.0",
                  device: str="cuda",
-                 compile: bool=True,
+                 compile: bool=False,
                  **kwargs
                  ):
         super().__init__(**kwargs)
@@ -52,6 +52,7 @@ class EqnormCalculator(Calculator):
         self.model_variant = model_variant
         self.train_progress = str(train_progress)
         self.device = torch.device(device)
+        self.compile = compile
         if not torch.cuda.is_available() and self.device.type == "cuda":
             raise ValueError("CUDA is not available, switching device to cpu.")
 
@@ -130,7 +131,8 @@ class EqnormCalculator(Calculator):
         for param in self.model.parameters():
             param.requires_grad = False
 
-        if compile:
+        if self.compile:
+            torch.set_float32_matmul_precision('high')
             self.model = torch.compile(self.model, mode='default')
 
 
