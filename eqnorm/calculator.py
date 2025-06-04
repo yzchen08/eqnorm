@@ -43,6 +43,7 @@ class EqnormCalculator(Calculator):
                  model_variant: str,
                  train_progress: str="1.0",
                  device: str="cuda",
+                 compile: bool=True,
                  **kwargs
                  ):
         super().__init__(**kwargs)
@@ -126,7 +127,8 @@ class EqnormCalculator(Calculator):
             self.model.load_state_dict(checkpoint['model_state_dict'])
         print(f"total parameters: {sum(p.numel() for p in self.model.parameters() if p.requires_grad)}")
 
-        self.start_time = time.perf_counter()
+        if compile:
+            self.model = torch.compile(self.model, mode='default')
 
 
     def calculate(self, atoms: Atoms = None, properties=None, system_changes=all_changes):

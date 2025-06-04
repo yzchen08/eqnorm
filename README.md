@@ -6,7 +6,7 @@
 
 ```text
 python>=3.10
-torch>=2.0.0
+torch>=2.6.0
 torch_scatter
 ```
 
