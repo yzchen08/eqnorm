@@ -7,7 +7,6 @@ from torch_scatter import scatter
 from e3nn import o3
 from e3nn.o3 import FullyConnectedTensorProduct, TensorProduct, Linear
 from e3nn.nn import FullyConnectedNet, Gate
-from e3nn.util.jit import compile_mode
 
 from .grad_output import EdgewiseGrad, NodewiseGrad
 from .layernorm import RMSLayerNorm as EquivariantLayerNorm
@@ -54,7 +53,6 @@ def get_path(
     return irreps_mid, instructions
 
 
-@compile_mode('script')
 class E3NN(torch.nn.Module):
     def __init__(
             self,
@@ -171,7 +169,7 @@ class E3NN(torch.nn.Module):
                 mode="scalar",
                 ))
             
-            self.layers.append(NonlinearAndAdd(self.scalar_features))
+            self.layers.append(NonlinearAndAdd())
            
         self.output_block = FullyConnectedNet(
             [self.num_features]
@@ -192,8 +190,8 @@ class E3NN(torch.nn.Module):
         data['edge_sh'] = self.sph(data['edge_vec'])
 
         data['edge_attr'] = self.besssel_basis(distance)
-        cutoff = self.poly_cutoff(distance).unsqueeze(-1)
-        data['edge_attr'] = data['edge_attr'] * cutoff
+        data['envelope'] = self.poly_cutoff(distance).unsqueeze(-1)
+        data['edge_attr'] = data['edge_attr'] * data['envelope']
 
         # print("otuput", -1, data['output'][:, :128].pow(2).mean(dim=-1, keepdim=True).pow(0.5).mean())
         for layer_idx, layer in enumerate(self.layers):
@@ -208,7 +206,6 @@ class E3NN(torch.nn.Module):
         return data['output']
 
 
-@compile_mode('script')
 class EquivariantGate(torch.nn.Module):
     def __init__(
             self, 
@@ -235,25 +232,19 @@ class EquivariantGate(torch.nn.Module):
         return None
 
 
-@compile_mode('script')
 class NonlinearAndAdd(torch.nn.Module):
-    def __init__(self, 
-                 irreps_out: Union[str, o3.Irreps],
-                 ):
+    def __init__(self):
         super().__init__()
         self.nonlinear = torch.nn.SiLU()
-        self.ln = EquivariantLayerNorm(o3.Irreps(irreps_out), centering=False)
 
     def forward(
             self, 
             data: dict[str, torch.Tensor], 
             ) -> None:
         data['output'] = data['output'] + self.nonlinear(data['node_scalars'])
-        data['output'] = self.ln(data['output'])
         return None
 
 
-@compile_mode('script')
 class Embedding_layer(torch.nn.Module):
     def __init__(
             self, 
@@ -273,7 +264,6 @@ class Embedding_layer(torch.nn.Module):
         return self.linear(one_hot)
 
 
-@compile_mode('script')
 class BesselBasis(torch.nn.Module):
     def __init__(
             self, 
@@ -302,7 +292,6 @@ class BesselBasis(torch.nn.Module):
         return self.prefactor * (numerator / x.unsqueeze(-1))
 
 
-@compile_mode('script')
 class PolynomialCutoff(torch.nn.Module):
     def __init__(
             self, 
@@ -331,7 +320,6 @@ class PolynomialCutoff(torch.nn.Module):
         return self.poly_cutoff(x, self._factor, p=self.p)
 
 
-@compile_mode('script')
 class E3Conv(torch.nn.Module):
     def __init__(
             self,
@@ -414,6 +402,7 @@ class E3Conv(torch.nn.Module):
         )
         if self.avg_num_neighbors is not None:
             edge_features = edge_features.div(self.avg_num_neighbors ** 0.5)
+        edge_features = edge_features * data['envelope']
         # node_hiddens = torch.zeros(len(node_hiddens), edge_features.shape[-1], device=edge_features.device, dtype=edge_features.dtype)
         # node_hiddens.index_add_(0, edge_src, edge_features)
         node_hiddens = scatter(edge_features, edge_src, dim=0, dim_size=len(node_hiddens))
@@ -434,7 +423,6 @@ class E3Conv(torch.nn.Module):
         return None
 
 
-@compile_mode('script')
 class HDNNP(torch.nn.Module):
     def __init__(
             self, 

@@ -1,10 +1,8 @@
 from typing import Optional
 import torch
 from torch_scatter import scatter
-from e3nn.util.jit import compile_mode
 
 
-@compile_mode('script')
 class NodewiseGrad(torch.nn.Module):
     def __init__(self, calc_stress: bool = False):
         super().__init__()
@@ -48,7 +46,6 @@ class NodewiseGrad(torch.nn.Module):
         return forces, stress
 
 
-@compile_mode('script')
 class EdgewiseGrad(torch.nn.Module):
     """
     https://github.com/MDIL-SNU/SevenNet/blob/main/sevenn/nn/force_output.py

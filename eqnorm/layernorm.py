@@ -2,7 +2,6 @@ from typing import List, Optional
 import torch
 import torch.nn as nn
 from e3nn.o3 import Irreps
-from e3nn.util.jit import compile, compile_mode
 
 
 def get_l_to_all_m_expand_index(lmax: int):
@@ -14,7 +13,6 @@ def get_l_to_all_m_expand_index(lmax: int):
     return expand_index
 
 
-@compile_mode("script")
 class EquiformerRMSLayerNorm(nn.Module):
     '''
         Irreps should have same multiplicity, e.g., "16x0e + 16x1o + 16x2e".
@@ -152,7 +150,6 @@ class EquiformerRMSLayerNorm(nn.Module):
         return out
 
 
-@compile_mode("script")
 class RMSLayerNorm(nn.Module):
     '''
         Irreps can have different multiplicity, e.g., "16x0e + 8x1o + 4x2e".
@@ -272,7 +269,7 @@ if __name__ == '__main__':
 
     # start = time.perf_counter()
     # sln = EquiformerRMSLayerNorm(irreps=irreps, affine=True, centering=False)
-    # sln = compile(sln)
+    # sln = torch.compile(sln)
     # y_0 = sln(x)
     # print(y_0[0])
     # print(f"{sln} Elapsed time: {time.perf_counter() - start:.4f} seconds")
@@ -280,7 +277,7 @@ if __name__ == '__main__':
 
     start = time.perf_counter()
     sln = RMSLayerNorm(irreps=irreps, affine=True, centering=False)
-    sln = compile(sln)
+    sln = torch.compile(sln)
     y = sln(x)
     print(y[0])
     print(f"{sln} Elapsed time: {time.perf_counter() - start:.4f} seconds")

@@ -7,7 +7,6 @@ from torch_scatter import scatter
 from e3nn import o3
 from e3nn.o3 import FullyConnectedTensorProduct, TensorProduct, Linear
 from e3nn.nn import FullyConnectedNet, Gate
-from e3nn.util.jit import compile_mode
 
 from .grad_output import EdgewiseGrad, NodewiseGrad
 from .layernorm import RMSLayerNorm as EquivariantLayerNorm
@@ -54,7 +53,6 @@ def get_path(
     return irreps_mid, instructions
 
 
-@compile_mode('script')
 class E3NN(torch.nn.Module):
     def __init__(
             self,
@@ -208,7 +206,6 @@ class E3NN(torch.nn.Module):
         return data['output']
 
 
-@compile_mode('script')
 class EquivariantGate(torch.nn.Module):
     def __init__(
             self, 
@@ -235,7 +232,6 @@ class EquivariantGate(torch.nn.Module):
         return None
 
 
-@compile_mode('script')
 class NonlinearAndAdd(torch.nn.Module):
     def __init__(self):
         super().__init__()
@@ -249,7 +245,6 @@ class NonlinearAndAdd(torch.nn.Module):
         return None
 
 
-@compile_mode('script')
 class Embedding_layer(torch.nn.Module):
     def __init__(
             self, 
@@ -269,7 +264,6 @@ class Embedding_layer(torch.nn.Module):
         return self.linear(one_hot)
 
 
-@compile_mode('script')
 class BesselBasis(torch.nn.Module):
     def __init__(
             self, 
@@ -298,7 +292,6 @@ class BesselBasis(torch.nn.Module):
         return self.prefactor * (numerator / x.unsqueeze(-1))
 
 
-@compile_mode('script')
 class PolynomialCutoff(torch.nn.Module):
     def __init__(
             self, 
@@ -327,7 +320,6 @@ class PolynomialCutoff(torch.nn.Module):
         return self.poly_cutoff(x, self._factor, p=self.p)
 
 
-@compile_mode('script')
 class E3Conv(torch.nn.Module):
     def __init__(
             self,
@@ -430,7 +422,6 @@ class E3Conv(torch.nn.Module):
         return None
 
 
-@compile_mode('script')
 class HDNNP(torch.nn.Module):
     def __init__(
             self, 
