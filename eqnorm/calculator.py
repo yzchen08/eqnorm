@@ -163,7 +163,7 @@ class EqnormCalculator(Calculator):
 
         self.model.eval()
         data = Batch.from_data_list([data]).to(self.device)
-        energy, forces, stress, _, _ = self.model(data)
+        energy, forces, stress, _, _ = self.model(data.to_dict(), training=False)
 
         # energy = energy * 0.0433641153087705  # kcal/mol to eV
         # force = force * 0.0433641153087705  # kcal/mol/A to eV/A
