@@ -31,6 +31,7 @@ class EqnormCalculator(Calculator):
             'eqnorm-pro-mptrj': {
                 "0.3": "https://figshare.com/files/54876488", 
                 "0.6": "https://figshare.com/files/55065911", 
+                "0.8": "https://figshare.com/files/55168799", 
                 },
             'eqnorm-max-mptrj': {
                 "0.3": "https://figshare.com/files/55065917", 
