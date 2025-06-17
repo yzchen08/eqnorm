@@ -100,7 +100,7 @@ class E3NN(torch.nn.Module):
         }
 
         self.num_conv_layers = num_conv_layers
-        self.convs = torch.nn.ModuleList()
+        self.layers = torch.nn.ModuleList()
         self.irreps_in = self.scalar_features
         for num_conv_layer in range(self.num_conv_layers):
             irreps_scalars = o3.Irreps()
@@ -135,7 +135,7 @@ class E3NN(torch.nn.Module):
             self.irreps_out = irreps_scalars + irreps_gate_scalars + irreps_nonscalars
             self.irreps_out = self.irreps_out.sort().irreps.simplify()
 
-            self.convs.append(E3Conv(
+            self.layers.append(E3Conv(
                 self.irreps_in, 
                 self.irreps_sh, 
                 self.irreps_out, 
@@ -148,7 +148,7 @@ class E3NN(torch.nn.Module):
             self.irreps_in = irreps_scalars + irreps_nonscalars
 
             if nonlinearity_type == "gate":
-                self.convs.append(EquivariantGate(
+                self.layers.append(EquivariantGate(
                     irreps_scalars=irreps_scalars,
                     act_scalars=[self.nonlinearity_scalars[ir.p] for _, ir in irreps_scalars],
                     irreps_gates=irreps_gate_scalars,
@@ -158,7 +158,7 @@ class E3NN(torch.nn.Module):
             else:
                 raise NotImplementedError(f"nonlinearity_type {nonlinearity_type} not implemented.")
 
-            self.convs.append(E3Conv(
+            self.layers.append(E3Conv(
                 self.irreps_in, 
                 self.irreps_sh, 
                 self.scalar_features, 
@@ -169,7 +169,7 @@ class E3NN(torch.nn.Module):
                 mode="scalar",
                 ))
             
-        self.ln = EquivariantLayerNorm(self.scalar_features, centering=False)
+            self.layers.append(NonlinearAndAdd())
            
         self.output_block = FullyConnectedNet(
             [self.num_features]
@@ -183,7 +183,7 @@ class E3NN(torch.nn.Module):
             data: dict[str, torch.Tensor],
             ) -> torch.Tensor:
         data['node_hiddens'] = self.embedding(data['atomic_numbers'])
-        output = data['node_hiddens']
+        data['output'] = data['node_hiddens']
         
         distance = torch.norm(data['edge_vec'], p=2, dim=-1)
         # data['edge_sh'] = o3.spherical_harmonics(self.irreps_sh, data['edge_vec'], normalize=True, normalization='component')
@@ -193,14 +193,17 @@ class E3NN(torch.nn.Module):
         cutoff = self.poly_cutoff(distance).unsqueeze(-1)
         data['edge_attr'] = data['edge_attr'] * cutoff
 
-        for layer_idx, conv in enumerate(self.convs):
-            conv(data)
-            if layer_idx % 3 == 2:
-                output = self.ln(output + data['node_scalars'])
+        # print("otuput", -1, data['output'][:, :128].pow(2).mean(dim=-1, keepdim=True).pow(0.5).mean())
+        for layer_idx, layer in enumerate(self.layers):
+            layer(data)
+            # print("otuput", layer_idx, data['output'][:, :128].pow(2).mean(dim=-1, keepdim=True).pow(0.5).mean())
+            # print("hidden", layer_idx, data['node_hiddens'][:, :128].pow(2).mean(dim=-1, keepdim=True).pow(0.5).mean())
+            # print("hidden", layer_idx, data['node_hiddens'][:, 128:].pow(2).mean(dim=-1, keepdim=True).pow(0.5).mean())
 
-        output = self.output_block(output)
+        data['output'] = self.output_block(data['output'])
+        # print("otuput", 100, data['output'][:, :128].pow(2).mean(dim=-1, keepdim=True).pow(0.5).mean())
 
-        return output
+        return data['output']
 
 
 class EquivariantGate(torch.nn.Module):
@@ -226,6 +229,19 @@ class EquivariantGate(torch.nn.Module):
             data: dict[str, torch.Tensor], 
             ) -> None:
         data['node_hiddens'] = self.gate(data['node_hiddens'])
+        return None
+
+
+class NonlinearAndAdd(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.nonlinear = torch.nn.SiLU()
+
+    def forward(
+            self, 
+            data: dict[str, torch.Tensor], 
+            ) -> None:
+        data['output'] = data['output'] + self.nonlinear(data['node_scalars'])
         return None
 
 
