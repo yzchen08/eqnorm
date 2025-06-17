@@ -31,7 +31,7 @@ pip install git+https://github.com/yzchen08/eqnorm.git
 
 ```python
 from eqnorm.calculator import EqnormCalculator
-calc = EqnormCalculator(model_name='eqnorm', model_variant='eqnorm-mptrj', train_progress='1.0', device='cuda')
+calc = EqnormCalculator(model_name='eqnorm', model_variant='eqnorm-mptrj', device='cuda')
 ```
 
 you can check all available ckpt by:

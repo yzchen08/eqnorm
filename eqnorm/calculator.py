@@ -24,25 +24,13 @@ class EqnormCalculator(Calculator):
 
     url_dict = {
         'eqnorm': {
-            'eqnorm-mptrj': {
-                "0.9": "https://figshare.com/files/54821513", 
-                "1.0": "https://figshare.com/files/54851735",
-                },
-            'eqnorm-pro-mptrj': {
-                "0.3": "https://figshare.com/files/54876488", 
-                "0.6": "https://figshare.com/files/55065911", 
-                "0.8": "https://figshare.com/files/55168799", 
-                },
-            'eqnorm-max-mptrj': {
-                "0.3": "https://figshare.com/files/55065917", 
-                },
+            'eqnorm-mptrj': "https://figshare.com/files/55429685",
             }
         }
 
     def __init__(self, 
                  model_name: str,
                  model_variant: str,
-                 train_progress: str="1.0",
                  device: str="cuda",
                  compile: bool=False,
                  **kwargs
@@ -51,7 +39,6 @@ class EqnormCalculator(Calculator):
 
         self.model_name = model_name
         self.model_variant = model_variant
-        self.train_progress = str(train_progress)
         self.device = torch.device(device)
         self.compile = compile
         if not torch.cuda.is_available() and self.device.type == "cuda":
@@ -73,14 +60,6 @@ class EqnormCalculator(Calculator):
                 f"Valid model variants are: {valid_model_variants}"
             )
 
-        # 检查 train_progress 是否在 url_dict[self.model_name][self.model_variant] 中
-        if self.train_progress not in self.url_dict[self.model_name][self.model_variant]:
-            valid_train_progress = list(self.url_dict[self.model_name][self.model_variant].keys())
-            raise KeyError(
-                f"Train progress '{self.train_progress}' not found under model variant '{self.model_variant}' in url_dict. "
-                f"Valid train progress values are: {valid_train_progress}"
-            )
-
         module = importlib.import_module(f"{self.model_name}.{self.model_variant}")
         HDNNP = getattr(module, "HDNNP")
 
@@ -91,11 +70,11 @@ class EqnormCalculator(Calculator):
         self.r_cutoff = self.model_args.r_cutoff
 
         os.makedirs(os.path.expanduser(f"~/.cache/{self.model_name}"), exist_ok=True)
-        self.ckpt_file = os.path.expanduser(f"~/.cache/{self.model_name}/{self.model_variant}-{self.train_progress}.pt")
+        self.ckpt_file = os.path.expanduser(f"~/.cache/{self.model_name}/{self.model_variant}.pt")
         if os.path.exists(self.ckpt_file):
             print(f"File {self.ckpt_file} already exists, skipping download.")
         else:
-            url = self.url_dict[self.model_name][self.model_variant][self.train_progress]
+            url = self.url_dict[self.model_name][self.model_variant]
             print(f"File {self.ckpt_file} not exists, downloading from {url}...")
             try:
                 wget.download(url, self.ckpt_file)
@@ -173,7 +152,8 @@ class EqnormCalculator(Calculator):
         self.results['forces'] = forces.cpu().detach().numpy()
         if self.model_args.STRESS:
             # self.results['stress'] = stress[0].cpu().detach().numpy().flatten()[[0, 4, 8, 5, 2, 1]]
-            self.results['stress'] = -stress[0].cpu().detach().numpy()[[0, 1, 2, 4, 5, 3]]
+            # self.results['stress'] = -stress[0].cpu().detach().numpy()[[0, 1, 2, 4, 5, 3]]
+            self.results['stress'] = -stress[0].cpu().detach().numpy()
         else:
             self.results['stress'] = np.zeros(6).astype(np.float32)
 

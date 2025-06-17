@@ -88,10 +88,10 @@ class EdgewiseGrad(torch.nn.Module):
                 # cat last dimension
                 _virial = torch.cat([
                     diag,
-                    s12.unsqueeze(-1),
                     s23.unsqueeze(-1),
-                    s31.unsqueeze(-1)
-                ], dim=-1)
+                    s31.unsqueeze(-1),
+                    s12.unsqueeze(-1),
+                ], dim=-1)  # voigt notation
 
                 # _s = torch.zeros(len(data['pos']), 6, dtype=fij.dtype, device=fij.device)
                 # _s.index_add_(0, data['edge_index'][1], _virial)
