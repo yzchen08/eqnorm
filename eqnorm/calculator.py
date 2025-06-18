@@ -151,9 +151,7 @@ class EqnormCalculator(Calculator):
         self.results['free_energy'] = energy.item()
         self.results['forces'] = forces.cpu().detach().numpy()
         if self.model_args.STRESS:
-            # self.results['stress'] = stress[0].cpu().detach().numpy().flatten()[[0, 4, 8, 5, 2, 1]]
-            # self.results['stress'] = -stress[0].cpu().detach().numpy()[[0, 1, 2, 4, 5, 3]]
-            self.results['stress'] = -stress[0].cpu().detach().numpy()
+            self.results['stress'] = stress[0].cpu().detach().numpy()
         else:
             self.results['stress'] = np.zeros(6).astype(np.float32)
 

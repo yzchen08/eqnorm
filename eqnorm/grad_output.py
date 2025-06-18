@@ -29,9 +29,8 @@ class NodewiseGrad(torch.nn.Module):
             stress = grad[1]
             if stress is not None:
                 volume = torch.linalg.det(data['cell']).abs().unsqueeze(-1)
-                stress = torch.neg(stress)
                 stress = stress / volume.view(len(data['cell']), 1, 1)
-                stress = stress.flatten(1, 2)[:, [0, 4, 8, 1, 5, 6]]
+                stress = stress.flatten(1, 2)[:, [0, 4, 8, 5, 2, 1]]  # voigt notation
         else:
             grad = torch.autograd.grad(
                 [energy.sum()],
@@ -102,7 +101,7 @@ class EdgewiseGrad(torch.nn.Module):
                 sout = scatter(_s, data['batch'], dim=0, dim_size=data['batch'][-1] + 1)
 
                 volume = torch.linalg.det(data['cell']).abs().unsqueeze(-1)
-                stress = torch.neg(sout) / volume
+                stress = sout / volume
 
         return forces, stress
 
