@@ -430,7 +430,6 @@ class HDNNP(torch.nn.Module):
             unique_elements: torch.Tensor, 
             shift: Optional[torch.Tensor] = None, 
             scale: Optional[torch.Tensor] = None, 
-            grad_mode: Literal['node', 'edge'] = 'edge',
             ) -> None:
         super().__init__()
         self.r_cutoff = args.r_cutoff  # A
@@ -438,7 +437,7 @@ class HDNNP(torch.nn.Module):
         self.num_types = len(self.unique_elements)
         self.shift = shift
         self.scale = scale
-        self.grad_mode = grad_mode
+        self.grad_mode = args.grad_mode
 
         if args.shift_trainable and self.shift is not None:
             self.shift = torch.nn.Parameter(self.shift)

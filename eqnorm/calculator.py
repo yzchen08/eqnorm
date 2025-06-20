@@ -25,6 +25,8 @@ class EqnormCalculator(Calculator):
     url_dict = {
         'eqnorm': {
             'eqnorm-mptrj': "https://figshare.com/files/55429685",
+            'eqnorm-omat': "https://figshare.com/files/00000000",
+            'eqnorm-max-mptrj': "https://figshare.com/files/00000001",
             }
         }
 

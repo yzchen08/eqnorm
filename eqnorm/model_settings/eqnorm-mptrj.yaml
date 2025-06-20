@@ -7,6 +7,7 @@ shift: "per_species"  # per_species, per_atom
 scale: "force_rms"  # per_species, per_atom, force_rms
 shift_trainable: False  # shift_scale trainable or not
 scale_trainable: False  # shift_scale trainable or not
+grad_mode: "edge" # "node", "edge"
 
 irreps_hidden: "128x0e+64x1o+32x2e+32x3o"
 irreps_sh: "1x0e+1x1o+1x2e+1x3o"
