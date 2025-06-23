@@ -98,9 +98,9 @@ class EqnormCalculator(Calculator):
 
         self.model = HDNNP(
             args=self.model_args, 
-            unique_elements=unique_elements.to(self.device), 
-            shift=energy_shift.to(self.device), 
-            scale=energy_scale.to(self.device), 
+            unique_elements=unique_elements, 
+            shift=energy_shift, 
+            scale=energy_scale, 
             )
         self.model = self.model.to(self.device)
 

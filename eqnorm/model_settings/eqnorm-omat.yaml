@@ -3,8 +3,8 @@ POLAR: False  # calculate polar or not
 STRESS: True  # calculate stress or not
 energy_per_atom: True  # calculate metric per atom or not
 relative_energy: False  # calculate conformer relative energy or not
-shift: "per_species"  # per_species, per_atom
-scale: "force_rms"  # per_species, per_atom, force_rms
+shift: null  # per_species, per_atom
+scale: null  # per_species, per_atom, force_rms
 shift_trainable: False  # shift_scale trainable or not
 scale_trainable: False  # shift_scale trainable or not
 grad_mode: "node" # "node", "edge"
