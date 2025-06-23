@@ -34,7 +34,7 @@ from eqnorm.calculator import EqnormCalculator
 calc = EqnormCalculator(model_name='eqnorm', model_variant='eqnorm-mptrj', device='cuda')
 ```
 
-you can check all available ckpt by:
+you can check all available ckpt, for now only eqnorm-mptrj is available:
 
 ```python
 from eqnorm.calculator import EqnormCalculator
