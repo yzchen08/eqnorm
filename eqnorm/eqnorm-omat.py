@@ -400,11 +400,16 @@ class E3Conv(torch.nn.Module):
         edge_features = self.tp(
             node_hiddens[edge_dst], data['edge_sh'], weight
         )
-        if self.avg_num_neighbors is not None:
-            edge_features = edge_features.div(self.avg_num_neighbors ** 0.5)
+
         # node_hiddens = torch.zeros(len(node_hiddens), edge_features.shape[-1], device=edge_features.device, dtype=edge_features.dtype)
         # node_hiddens.index_add_(0, edge_src, edge_features)
-        node_hiddens = scatter(edge_features, edge_src, dim=0, dim_size=len(node_hiddens))
+        node_hiddens = scatter(edge_features, edge_src, dim=0, dim_size=len(node_hiddens), reduce='sum')
+        if self.avg_num_neighbors is not None:
+            node_hiddens = node_hiddens.div(self.avg_num_neighbors ** 0.5)
+        else:
+            avg_num_neighbors = edge_src.bincount(minlength=len(node_hiddens)).unsqueeze(-1)
+            avg_num_neighbors[avg_num_neighbors == 0] = 1  # avoid division by zero
+            node_hiddens = node_hiddens.div(avg_num_neighbors.sqrt())
 
         node_hiddens = self.linear_2(node_hiddens)
 

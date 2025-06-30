@@ -12,7 +12,7 @@ Trained on the MPtrj dataset, eqnorm ranks second among state-of-the-art models 
 ![Figure 2. Matbench leaderboard](./figures/matbench_leaderboard.png)
 Figure 2. Matbench discovery compliant models leaderboard. See [Matbench Discovery](https://matbench-discovery.materialsproject.org/).
 
-We used the exact benchmark code found in [mace_benchmark](https://github.com/ACEsuit/mace/blob/main/tests/test_benchmark.py) with mace-torch v0.3.12 (PyPi) to test MD simulation using different MLIPs. To create a fair comparison, All models are benchmarked using the standard Python (3.10) runtime with Pytorch v2.6.0 and CUDA 11.8. No compile/torchscript was used. Notably, eqnorm achieves a fivefold improvement in inference speed over the leading model, eSEN, while enabling simulations of systems threefold larger in size.
+We used the exact benchmark code found in [mace_benchmark](https://github.com/ACEsuit/mace/blob/main/tests/test_benchmark.py) with mace-torch v0.3.12 (PyPi) to test MD simulation using different MLIPs. To create a fair comparison, all models are benchmarked using the standard Python (3.10) runtime with Pytorch v2.6.0 and CUDA 11.8. No compile/torchscript was used. Notably, eqnorm achieves a fivefold improvement in inference speed over the leading model, eSEN, while enabling simulations of systems threefold larger in size.
 
 Table 1. Inference efficiency test of MD simulation with 1 fs/step on a single Nvidia A40-48G GPU (speed in ns per day / consumed GPU memory).
 

@@ -3,7 +3,7 @@ POLAR: False  # calculate polar or not
 STRESS: True  # calculate stress or not
 energy_per_atom: True  # calculate metric per atom or not
 relative_energy: False  # calculate conformer relative energy or not
-shift: null  # per_species, per_atom
+shift: "per_species"  # per_species, per_atom
 scale: null  # per_species, per_atom, force_rms
 shift_trainable: False  # shift_scale trainable or not
 scale_trainable: False  # shift_scale trainable or not
@@ -20,6 +20,6 @@ invariant_neurons: 64
 poly_p: 6
 use_ema: True
 
-avg_nbr: 39.19  # MPtrj_r6: 61.84 MPtrj_r5: 33.15 omat: 39.19
-avg_atoms: 18.67  # MPtrj_r6: 31.19 MPtrj_r5: 31.19 omat: 18.67
+avg_nbr: null  # MPtrj_r6: 61.84 MPtrj_r5: 33.15 omat: 39.19
+avg_atoms: null  # MPtrj_r6: 31.19 MPtrj_r5: 31.19 omat: 18.67
 
